@@ -6,9 +6,10 @@ import java.io.IOException
 import scala.io.StdIn
 
 object ZIORecap extends ZIOAppDefault:
-    /** ZIO = data structure describing arbitrary computations (including side
-      * effects) "effects" = computations as values
-      */
+    /**
+     * ZIO = data structure describing arbitrary computations (including side effects) "effects" =
+     * computations as values
+     */
 
     // basics
     val meaningOfLife: ZIO[Any, Nothing, Int] = ZIO.succeed(42)
@@ -65,7 +66,7 @@ object ZIORecap extends ZIOAppDefault:
             .onInterrupt(ZIO.succeed(println("I'm interrupted!")))
             .fork
         _ <- ZIO.sleep(500.millis) *> ZIO.succeed(
-          println("cancelling fiber")
+            println("cancelling fiber")
         ) *> fiber.interrupt
         _ <- fiber.join
     yield ()
@@ -73,13 +74,13 @@ object ZIORecap extends ZIOAppDefault:
     val ignoredInterruption = for
         fiber <- ZIO
             .uninterruptible(
-              delayedValue
-                  .map(println)
-                  .onInterrupt(ZIO.succeed(println("I'm interrupted!")))
+                delayedValue
+                    .map(println)
+                    .onInterrupt(ZIO.succeed(println("I'm interrupted!")))
             )
             .fork
         _ <- ZIO.sleep(500.millis) *> ZIO.succeed(
-          println("cancelling fiber")
+            println("cancelling fiber")
         ) *> fiber.interrupt
         _ <- fiber.join
     yield ()
@@ -104,10 +105,10 @@ object ZIORecap extends ZIOAppDefault:
         yield ()
 
     override def run: ZIO[ZIOAppArgs & Scope, Any, Any] = program.provide(
-      ConnectionPool.live(10), // build me a ConnectionPool
-      UserDatabase.live, // build me a UserDatabase, using a ConnectionPool
-      EmailService.live, // build me a EmailService
-      UserSubscription.live // build me a UserSubscription, using the EmailService and UserDatabase
+        ConnectionPool.live(10), // build me a ConnectionPool
+        UserDatabase.live,       // build me a UserDatabase, using a ConnectionPool
+        EmailService.live,       // build me a EmailService
+        UserSubscription.live // build me a UserSubscription, using the EmailService and UserDatabase
     )
 
 end ZIORecap

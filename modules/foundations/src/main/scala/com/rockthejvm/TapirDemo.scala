@@ -21,7 +21,12 @@ object TapirDemo extends ZIOAppDefault:
 
     val db: scala.collection.mutable.Map[Long, Job] =
         scala.collection.mutable.Map(
-          1L -> Job(id = 1L, title = "Instructor", url = "rockthejvm.com", company = "Rock the JVM")
+            1L -> Job(
+                id = 1L,
+                title = "Instructor",
+                url = "rockthejvm.com",
+                company = "Rock the JVM"
+            )
         )
 
     val createEndpoint: ServerEndpoint[Any, zio.Task] = endpoint
@@ -61,7 +66,7 @@ object TapirDemo extends ZIOAppDefault:
 
     val serverProgram = Server.serve(
         ZioHttpInterpreter(ZioHttpServerOptions.default).toHttp(
-          List(createEndpoint, getByIdEndpoint, getAllEndpoint)
+            List(createEndpoint, getByIdEndpoint, getAllEndpoint)
         )
     )
 

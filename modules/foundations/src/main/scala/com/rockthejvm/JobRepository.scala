@@ -17,8 +17,7 @@ object JobRepositoryLive:
             ZIO.service[Quill.Postgres[SnakeCase]]
                 .map(quill => JobRepositoryLive(quill))
 
-class JobRepositoryLive(quill: Quill.Postgres[SnakeCase])
-    extends JobRepository[Task]:
+class JobRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends JobRepository[Task]:
     // step 1
     import quill.*
 
@@ -39,9 +38,9 @@ class JobRepositoryLive(quill: Quill.Postgres[SnakeCase])
     override def update(id: Long, op: Job => Job): Task[Job] =
         for
             current <- getById(id).someOrFail(
-              new RuntimeException(
-                s"Could not update: missing key $id"
-              )
+                new RuntimeException(
+                    s"Could not update: missing key $id"
+                )
             )
             updated <- run:
                 query[Job]
