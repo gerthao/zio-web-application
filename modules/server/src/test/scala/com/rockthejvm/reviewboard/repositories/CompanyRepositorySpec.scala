@@ -35,16 +35,18 @@ object CompanyRepositorySpec extends ZIOSpecDefault:
 
                 program.assert:
                     case Company(_, "rock-the-jvm", "Rock the JVM", "rockthejvm.com", _, _, _, _, _) => true
-                    case _ => false
-            , test("creating a duplicate should error"):
+                    case _ => false,
+            
+            test("creating a duplicate should error"):
                 val program = for
                     repo <- ZIO.service[CompanyRepository]
                     _ <- repo.create(rtjvm)
                     err <- repo.create(rtjvm).flip
                 yield err
-
-                program.assert(_.isInstanceOf[SQLException])
-            , test("get by id and slug"):
+                
+                program.assert(_.isInstanceOf[SQLException]),
+            
+            test("get by id and slug"):
                 val program = for
                     repo <- ZIO.service[CompanyRepository]
                     company <- repo.create(rtjvm)
@@ -55,8 +57,9 @@ object CompanyRepositorySpec extends ZIOSpecDefault:
                 program.assert:
                     case (company, fetchedById, fetchedBySlug) =>
                         fetchedById.contains(company)
-                            && fetchedBySlug.contains(company)
-            , test("updated record"):
+                            && fetchedBySlug.contains(company),
+            
+            test("updated record"):
                 val program = for
                     repo <- ZIO.service[CompanyRepository]
                     company <- repo.create(rtjvm)
@@ -66,17 +69,19 @@ object CompanyRepositorySpec extends ZIOSpecDefault:
 
                 program.assert:
                     case (updated, fetchedById) =>
-                        fetchedById.contains(updated)
-            , test("delete record"):
+                        fetchedById.contains(updated),
+            
+            test("delete record"):
                 val program = for
                     repo <- ZIO.service[CompanyRepository]
                     company <- repo.create(rtjvm)
                     _ <- repo.delete(company.id)
                     fetchedById <- repo.getById(company.id)
                 yield fetchedById
-
-                program.assert(_.isEmpty)
-            , test("get all records"):
+                
+                program.assert(_.isEmpty),
+            
+            test("get all records"):
                 val program = for
                     repo <- ZIO.service[CompanyRepository]
                     companies <- ZIO.collectAll((1 to 10).map(_ => repo.create(genCompany())))
@@ -86,6 +91,7 @@ object CompanyRepositorySpec extends ZIOSpecDefault:
                 program.assert:
                     case (companies, companiesFetched) =>
                         companies.toSet == companiesFetched.toSet
+                        
         ).provide(
             CompanyRepositoryLive.layer,
             dataSourceLayer,
