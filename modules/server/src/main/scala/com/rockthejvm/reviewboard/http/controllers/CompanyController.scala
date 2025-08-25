@@ -32,3 +32,4 @@ object CompanyController:
     val makeZIO: ZIO[CompanyService, Nothing, CompanyController] =
         for service <- ZIO.service[CompanyService]
         yield new CompanyController(service)
+
