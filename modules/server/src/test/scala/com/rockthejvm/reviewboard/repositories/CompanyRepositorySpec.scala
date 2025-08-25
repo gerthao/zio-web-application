@@ -12,15 +12,19 @@ import javax.sql.DataSource
 import scala.util.Random
 
 object CompanyRepositorySpec extends ZIOSpecDefault:
-    private val rtjvm = Company(1L, "rock-the-jvm", "Rock the JVM", "rockthejvm.com")
+    private val rtjvm = Company(
+        id = 1L,
+        slug = "rock-the-jvm",
+        name = "Rock the JVM",
+        url = "rockthejvm.com"
+    )
 
-    private def genCompany(): Company =
-        Company(
-            id = -1L,
-            slug = genString(),
-            name = genString(),
-            url = genString(),
-        )
+    private def genCompany(): Company = Company(
+        id = -1L,
+        slug = genString(),
+        name = genString(),
+        url = genString(),
+    )
 
     private def genString(): String =
         Random.alphanumeric.take(8).mkString
@@ -91,7 +95,7 @@ object CompanyRepositorySpec extends ZIOSpecDefault:
                 program.assert:
                     case (companies, companiesFetched) =>
                         companies.toSet == companiesFetched.toSet
-                        
+
         ).provide(
             CompanyRepositoryLive.layer,
             dataSourceLayer,
