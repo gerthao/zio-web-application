@@ -35,33 +35,30 @@ object ReviewRepositorySpec extends ZIOSpecDefault with RepositorySpec("sql/revi
         updated = java.time.Instant.now(),
     )
 
-    val testCreate: Spec[ReviewRepository, Throwable] = test("create review"):
-        val program = for
+    val testCreate: Spec[ReviewRepository, Throwable] = test("create review"): 
+        for
             repo <- ZIO.service[ReviewRepository]
-            review <- repo.create(goodReview)
-        yield review
-
-        program.assert: review =>
-            review.management == goodReview.management
-                && review.culture == goodReview.culture
-                && review.salary == goodReview.salary
-                && review.benefits == goodReview.benefits
-                && review.wouldRecommend == goodReview.wouldRecommend
+            review <- repo.create(goodReview) 
+        yield assertTrue(
+            review.management == goodReview.management,
+            review.culture == goodReview.culture,
+            review.salary == goodReview.salary,
+            review.benefits == goodReview.benefits,
+            review.wouldRecommend == goodReview.wouldRecommend
+        )
 
     val testGetByIds: Spec[ReviewRepository, Throwable] = test("get review by ids(id, companyId, userId"):
-        val program = for
+        for
             repo <- ZIO.service[ReviewRepository]
             review <- repo.create(goodReview)
             fetchedReviewById <- repo.getById(review.id)
             fetchedReviewByCompanyId <- repo.getById(review.companyId)
             fetchedReviewByUserId <- repo.getById(review.userId)
-        yield (review, fetchedReviewById, fetchedReviewByCompanyId, fetchedReviewByUserId)
-
-        program.assert:
-            case (review, fetchedReviewById, fetchedReviewByCompanyId, fetchedReviewByUserId) =>
-                fetchedReviewById.contains(review)
-                    && fetchedReviewByCompanyId.contains(review)
-                    && fetchedReviewByUserId.contains(review)
+        yield assertTrue(
+            fetchedReviewById.contains(review)
+                && fetchedReviewByCompanyId.contains(review)
+                && fetchedReviewByUserId.contains(review)
+        )
 
     val testGetAll: Spec[ReviewRepository, Throwable]  = test("get all reviews"):
         val program = for
@@ -107,7 +104,7 @@ object ReviewRepositorySpec extends ZIOSpecDefault with RepositorySpec("sql/revi
         )
 
     override def spec: Spec[TestEnvironment & Scope, Any] =
-        suite("ReviewRespositorySpec")(
+        suite("ReviewRepositorySpec")(
             testCreate,
             testGetByIds,
             testGetAll,
