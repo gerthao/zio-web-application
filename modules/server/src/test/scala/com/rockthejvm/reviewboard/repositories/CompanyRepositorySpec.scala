@@ -11,19 +11,19 @@ import java.sql.SQLException
 import javax.sql.DataSource
 import scala.util.Random
 
-object CompanyRepositorySpec extends ZIOSpecDefault:
+object CompanyRepositorySpec extends ZIOSpecDefault with RepositorySpec("sql/companies.sql"):
     private val rtjvm = Company(
-        id = 1L,
+        id   = 1L,
         slug = "rock-the-jvm",
         name = "Rock the JVM",
-        url = "rockthejvm.com"
+        url  = "rockthejvm.com"
     )
 
     private def genCompany(): Company = Company(
-        id = -1L,
+        id   = -1L,
         slug = genString(),
         name = genString(),
-        url = genString(),
+        url  = genString(),
     )
 
     private def genString(): String =
@@ -102,28 +102,3 @@ object CompanyRepositorySpec extends ZIOSpecDefault:
             Repository.quillLayer,
             Scope.default
         )
-
-    // test containers
-    // spawn a Postgres instance on Docker just for the test
-    // create a DataSource to connect to the Postgres db
-    def createContainer(): PostgreSQLContainer[Nothing] =
-        val container: PostgreSQLContainer[Nothing] =
-            PostgreSQLContainer("postgres")
-                .withInitScript("sql/companies.sql")
-        container.start()
-        container
-        
-    // create a DataSource to connect to the Postgres
-    def createDataSource(container: PostgreSQLContainer[Nothing]): DataSource =
-        val dataSource = new PGSimpleDataSource()
-        dataSource.setUrl(container.getJdbcUrl)
-        dataSource.setUser(container.getUsername)
-        dataSource.setPassword(container.getPassword)
-        dataSource
-        
-    // use the DataSource (as a ZLayer) to build the Quill instance (as a ZLayer)
-    val dataSourceLayer = ZLayer:
-        for 
-            container <- ZIO.acquireRelease(ZIO.attempt(createContainer()))(container => ZIO.attempt(container.stop()).ignoreLogged)
-            dataSource <- ZIO.attempt(createDataSource(container))
-        yield dataSource
