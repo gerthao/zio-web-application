@@ -14,7 +14,7 @@ trait ReviewService:
     def getByUserId(userId: Long): Task[List[Review]]
 
 class ReviewServiceLive private (repo: ReviewRepository) extends ReviewService:
-    override def create(req: CreateReviewRequest, userId: Long): Task[Review] = {
+    override def create(req: CreateReviewRequest, userId: Long): Task[Review] =
         repo.create(
             Review(
                 id = -1L,
@@ -30,7 +30,6 @@ class ReviewServiceLive private (repo: ReviewRepository) extends ReviewService:
                 updated = Instant.now()
             )
         )
-    }
 
     override def getById(id: Long): Task[Option[Review]] =
         repo.getById(id)
