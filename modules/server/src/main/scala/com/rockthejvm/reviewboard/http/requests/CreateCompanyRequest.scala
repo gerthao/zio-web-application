@@ -13,15 +13,15 @@ final case class CreateCompanyRequest(
     tags: Option[List[String]] = None
 ):
     def toCompany(id: Long): Company = Company(
-      id,
-      Company.makeSlug(name),
-      name,
-      url,
-      location,
-      country,
-      industry,
-      image,
-      tags.getOrElse(List.empty)
+        id = id,
+        slug = Company.makeSlug(name),
+        name = name,
+        url = url,
+        location = location,
+        country = country,
+        industry = industry,
+        image = image,
+        tags = tags.getOrElse(List.empty)
     )
 
 object CreateCompanyRequest:
