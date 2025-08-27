@@ -1,22 +1,48 @@
 package com.rockthejvm.reviewboard.repositories
 
 import com.rockthejvm.reviewboard.domain.data.{Company, Review}
-import io.getquill.SnakeCase
+import io.getquill.*
 import io.getquill.jdbczio.Quill
 import zio.*
+import com.rockthejvm.reviewboard.PipeOps.*
 
 class ReviewRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends ReviewRepository:
-    def create(review: Review): Task[Review] = ZIO.fail(new RuntimeException("not implemented"))
+    import quill.*
 
-    def getById(id: Long): Task[Option[Review]] = ZIO.fail(new RuntimeException("not implemented"))
+    inline given reviewSchema: SchemaMeta[Review] = schemaMeta[Review]("reviews")
+    inline given reviewInsertMeta: InsertMeta[Review] = insertMeta[Review](_.id, _.created, _.updated)
+    inline given reviewUpdateMeta: UpdateMeta[Review] = updateMeta[Review](_.id, _.companyId, _.userId, _.created)
 
-    def getByCompanyId(companyId: Long): Task[List[Review]] = ZIO.fail(new RuntimeException("not implemented"))
+    def addTwo(n: Int) = n + 2
+    val i: Int = 3 |> addTwo
 
-    def getByUserId(userId: Long): Task[List[Review]] = ZIO.fail(new RuntimeException("not implemented"))
+    def create(review: Review): Task[Review] =
+        run:
+            query[Review].insertValue(lift(review)).returning(r => r)
 
-    def update(id: Long, op: Review => Review): Task[Review] = ZIO.fail(new RuntimeException("not implemented"))
+    def getById(id: Long): Task[Option[Review]] =
+        run:
+            query[Review].filter(_.id == lift(id))
+        .map(_.headOption)
 
-    def delete(id: Long): Task[Review] = ZIO.fail(new RuntimeException("not implemented"))
+
+    def getByCompanyId(companyId: Long): Task[List[Review]] =
+        run:
+            query[Review].filter(_.companyId == lift(companyId))
+
+    def getByUserId(userId: Long): Task[List[Review]] =
+        run:
+            query[Review].filter(_.userId == lift(userId))
+
+    def update(id: Long, op: Review => Review): Task[Review] =
+        for
+            current <- getById(id).someOrFail(new RuntimeException(s"update review failed: missing id $id"))
+            updated <- run:
+                query[Review].filter(_.id == lift(id)).updateValue(lift(op(current))).returning(r => r)
+        yield updated
+
+    def delete(id: Long): Task[Review] = run:
+        query[Review].filter(_.id == lift(id)).delete.returning(r => r)
 
 
 object ReviewRepositoryLive:

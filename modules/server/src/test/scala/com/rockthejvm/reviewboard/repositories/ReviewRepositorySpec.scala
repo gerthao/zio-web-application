@@ -35,10 +35,10 @@ object ReviewRepositorySpec extends ZIOSpecDefault with RepositorySpec("sql/revi
         updated = java.time.Instant.now(),
     )
 
-    val testCreate: Spec[ReviewRepository, Throwable] = test("create review"): 
+    val testCreate: Spec[ReviewRepository, Throwable] = test("create review"):
         for
             repo <- ZIO.service[ReviewRepository]
-            review <- repo.create(goodReview) 
+            review <- repo.create(goodReview)
         yield assertTrue(
             review.management == goodReview.management,
             review.culture == goodReview.culture,
@@ -76,8 +76,8 @@ object ReviewRepositorySpec extends ZIOSpecDefault with RepositorySpec("sql/revi
 
     val testEdit: Spec[ReviewRepository, Throwable] = test("edit review"):
         for
-            repo <- ZIO.service[ReviewRepository]
-            review <- repo.create(goodReview)
+            repo    <- ZIO.service[ReviewRepository]
+            review  <- repo.create(goodReview)
             updated <- repo.update(review.id, _.copy(review = "is okay"))
         yield assertTrue(
             updated.id == review.id,
