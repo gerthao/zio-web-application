@@ -7,8 +7,7 @@ import sttp.tapir.json.zio.*
 import sttp.tapir.generic.auto.*
 
 trait CompanyEndpoints:
-    protected val createEndpoint
-        : Endpoint[Unit, CreateCompanyRequest, Unit, Company, Any] =
+    protected val createEndpoint: Endpoint[Unit, CreateCompanyRequest, Unit, Company, Any] =
         endpoint
             .tag("companies")
             .name("create")
