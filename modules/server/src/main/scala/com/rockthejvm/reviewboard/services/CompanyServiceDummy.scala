@@ -23,4 +23,4 @@ class CompanyServiceDummy extends CompanyService:
         db.values.find(_.slug == slug)
 
 object CompanyServiceDummy:
-    val layer: ULayer[CompanyServiceDummy] = ZLayer.succeed(new CompanyServiceDummy)
+    val layer: ULayer[CompanyServiceDummy] = ZLayer.succeed(CompanyServiceDummy())

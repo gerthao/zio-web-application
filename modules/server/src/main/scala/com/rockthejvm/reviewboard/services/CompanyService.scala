@@ -12,6 +12,3 @@ trait CompanyService:
     def getAll: Task[List[Company]]
     def getById(id: Long): Task[Option[Company]]
     def getBySlug(slug: String): Task[Option[Company]]
-
-
-
