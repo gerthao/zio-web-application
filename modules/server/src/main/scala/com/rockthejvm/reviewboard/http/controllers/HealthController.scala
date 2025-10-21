@@ -11,8 +11,6 @@ class HealthController private extends BaseController with HealthEndpoints:
         ZIO.succeed("All good!")
 
     val errorRoute: ServerEndpoint[Any, Task] = errorEndpoint
-        .errorOut(statusCode and plainBody[String])
-        .mapErrorOut[Throwable](HttpError.decode)(HttpError.encode)
         .serverLogic[Task]:
             _ => ZIO.fail(new RuntimeException("Something went wrong!")).either
 
@@ -22,5 +20,5 @@ class HealthController private extends BaseController with HealthEndpoints:
     )
 
 object HealthController:
-    val makeZIO: ZIO[Any, Nothing, HealthController] =
-        ZIO.succeed(new HealthController)
+    val makeZIO: ZIO[Any, Nothing, HealthController] = ZIO.succeed(new HealthController)
+    

@@ -6,31 +6,28 @@ import sttp.tapir.*
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.zio.*
 
-trait ReviewEndpoints:
-    protected val createEndpoint: Endpoint[Unit, CreateReviewRequest, Unit, Review, Any] =
-        endpoint
-            .tag("reviews")
-            .name("create")
-            .description("add a review for a company")
-            .in("reviews")
-            .post
-            .in(jsonBody[CreateReviewRequest])
-            .out(jsonBody[Review])
+trait ReviewEndpoints extends BaseEndpoint:
+    val createEndpoint: Endpoint[Unit, CreateReviewRequest, Throwable, Review, Any] = baseEndpoint
+        .tag("reviews")
+        .name("create")
+        .description("add a review for a company")
+        .in("reviews")
+        .post
+        .in(jsonBody[CreateReviewRequest])
+        .out(jsonBody[Review])
 
-    protected val getByIdEndpoint: Endpoint[Unit, Long, Unit, Option[Review], Any] =
-        endpoint
-            .tag("reviews")
-            .name("getById")
-            .description("get review by its id")
-            .in("reviews" / path[Long]("id"))
-            .get
-            .out(jsonBody[Option[Review]])
+    val getByIdEndpoint: Endpoint[Unit, Long, Throwable, Option[Review], Any] = baseEndpoint
+        .tag("reviews")
+        .name("getById")
+        .description("get review by its id")
+        .in("reviews" / path[Long]("id"))
+        .get
+        .out(jsonBody[Option[Review]])
 
-    protected val getByCompanyIdEndpoint: Endpoint[Unit, Long, Unit, List[Review], Any] =
-        endpoint
-            .tag("reviews")
-            .name("getByCompanyId")
-            .description("get reviews by company id")
-            .in("reviews" / "company" / path[Long]("companyId"))
-            .get
-            .out(jsonBody[List[Review]])
+    val getByCompanyIdEndpoint: Endpoint[Unit, Long, Throwable, List[Review], Any] = baseEndpoint
+        .tag("reviews")
+        .name("getByCompanyId")
+        .description("get reviews by company id")
+        .in("reviews" / "company" / path[Long]("companyId"))
+        .get
+        .out(jsonBody[List[Review]])
