@@ -11,23 +11,27 @@ import scala.collection.mutable
 class CompanyController private (service: CompanyService)
     extends BaseController
     with CompanyEndpoints:
-    
-    override val routes: List[ServerEndpoint[Any, Task]] = List(create, getAll, getById)
-    
-    val db: mutable.Map[Long, Company] = mutable.Map.empty[Long, Company]
-    
+
     val create: ServerEndpoint[Any, Task] = createEndpoint.serverLogicSuccess: req =>
         service.create(req)
-        
+
     val getAll: ServerEndpoint[Any, Task] = getAllEndpoint.serverLogicSuccess: _ =>
         service.getAll
-        
+
     val getById: ServerEndpoint[Any, Task] = getByIdEndpoint.serverLogicSuccess: id =>
         ZIO.attempt(id.toLong)
             .flatMap(service.getById)
             .catchSome:
                 case _: NumberFormatException =>
                     service.getBySlug(id)
+
+    override val routes: List[ServerEndpoint[Any, Task]] = List(
+        create,
+        getAll,
+        getById
+    )
+
+    val db: mutable.Map[Long, Company] = mutable.Map.empty[Long, Company]
 
 object CompanyController:
     val makeZIO: ZIO[CompanyService, Nothing, CompanyController] =
