@@ -1,9 +1,9 @@
 package com.rockthejvm.reviewboard.repositories
 
 import com.rockthejvm.reviewboard.domain.data.Company
-import zio.*
 import io.getquill.*
 import io.getquill.jdbczio.Quill
+import zio.*
 
 class CompanyRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends CompanyRepository:
     import quill.*
@@ -21,7 +21,7 @@ class CompanyRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends CompanyRep
     override def update(id: Long, op: Company => Company): Task[Company] =
         for
             current <- getById(id).someOrFail(
-              new RuntimeException(s"Could not update: missing id $id")
+                new RuntimeException(s"Could not update: missing id $id")
             )
             updated <- run:
                 query[Company]
@@ -30,17 +30,17 @@ class CompanyRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends CompanyRep
                     .returning(r => r)
         yield updated
 
+    override def getById(id: Long): Task[Option[Company]] =
+        run:
+            query[Company].filter(_.id == lift(id))
+        .map(_.headOption)
+
     override def delete(id: Long): Task[Company] =
         run:
             query[Company]
                 .filter(_.id == lift(id))
                 .delete
                 .returning(r => r)
-
-    override def getById(id: Long): Task[Option[Company]] =
-        run:
-            query[Company].filter(_.id == lift(id))
-        .map(_.headOption)
 
     override def getBySlug(slug: String): Task[Option[Company]] =
         run:

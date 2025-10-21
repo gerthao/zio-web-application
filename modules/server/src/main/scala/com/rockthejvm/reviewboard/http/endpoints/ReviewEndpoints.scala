@@ -3,8 +3,8 @@ package com.rockthejvm.reviewboard.http.endpoints
 import com.rockthejvm.reviewboard.domain.data.Review
 import com.rockthejvm.reviewboard.http.requests.CreateReviewRequest
 import sttp.tapir.*
-import sttp.tapir.json.zio.*
 import sttp.tapir.generic.auto.*
+import sttp.tapir.json.zio.*
 
 trait ReviewEndpoints:
     protected val createEndpoint: Endpoint[Unit, CreateReviewRequest, Unit, Review, Any] =

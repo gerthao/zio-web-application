@@ -7,8 +7,11 @@ import zio.ZLayer
 import javax.sql.DataSource
 
 object Repository:
-    def quillLayer: ZLayer[DataSource, Nothing, Quill.Postgres[SnakeCase.type]] = Quill.Postgres.fromNamingStrategy(SnakeCase)
+    val dataLayer: ZLayer[Any, Throwable, Quill.Postgres[SnakeCase.type]] =
+        dataSourceLayer >>> quillLayer
 
-    def dataSourceLayer: ZLayer[Any, Throwable, DataSource] = Quill.DataSource.fromPrefix("application.db")
+    def quillLayer: ZLayer[DataSource, Nothing, Quill.Postgres[SnakeCase.type]] =
+        Quill.Postgres.fromNamingStrategy(SnakeCase)
 
-    val dataLayer: ZLayer[Any, Throwable, Quill.Postgres[SnakeCase.type]] = dataSourceLayer >>> quillLayer
+    def dataSourceLayer: ZLayer[Any, Throwable, DataSource] =
+        Quill.DataSource.fromPrefix("application.db")

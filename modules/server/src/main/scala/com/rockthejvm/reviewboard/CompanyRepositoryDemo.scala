@@ -10,7 +10,7 @@ object CompanyRepositoryDemo extends ZIOAppDefault:
     val program: ZIO[CompanyRepository, Throwable, Unit] =
         for
             repo <- ZIO.service[CompanyRepository]
-            _ <- repo.create(Company(-1L, "hello-world", "Hello World", "helloworld.org"))
+            _    <- repo.create(Company(-1L, "hello-world", "Hello World", "helloworld.org"))
         yield ()
 
     override def run: ZIO[Any & ZIOAppArgs & Scope, Any, Any] =

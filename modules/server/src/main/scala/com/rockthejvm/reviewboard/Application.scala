@@ -2,10 +2,13 @@ package com.rockthejvm.reviewboard
 
 import com.rockthejvm.reviewboard.PipeOps.*
 import com.rockthejvm.reviewboard.http.HttpApi
-import com.rockthejvm.reviewboard.repositories.{CompanyRepositoryLive, Repository, ReviewRepositoryLive}
-import com.rockthejvm.reviewboard.services.{CompanyServiceDummy, CompanyServiceLive, ReviewServiceLive}
+import com.rockthejvm.reviewboard.repositories.{
+    CompanyRepositoryLive,
+    Repository,
+    ReviewRepositoryLive
+}
+import com.rockthejvm.reviewboard.services.{CompanyServiceLive, ReviewServiceLive}
 import io.getquill.SnakeCase
-import io.getquill.jdbczio.Quill
 import sttp.tapir.*
 import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
 import zio.*

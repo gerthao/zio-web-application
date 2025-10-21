@@ -3,8 +3,8 @@ package com.rockthejvm.reviewboard.http.endpoints
 import com.rockthejvm.reviewboard.domain.data.Company
 import com.rockthejvm.reviewboard.http.requests.CreateCompanyRequest
 import sttp.tapir.*
-import sttp.tapir.json.zio.*
 import sttp.tapir.generic.auto.*
+import sttp.tapir.json.zio.*
 
 trait CompanyEndpoints:
     protected val createEndpoint: Endpoint[Unit, CreateCompanyRequest, Unit, Company, Any] =
@@ -25,7 +25,7 @@ trait CompanyEndpoints:
             .in("companies")
             .get
             .out(jsonBody[List[Company]])
-        
+
     protected val getByIdEndpoint: Endpoint[Unit, String, Unit, Option[Company], Any] =
         endpoint
             .tag("companies")

@@ -8,13 +8,13 @@ ThisBuild / scalacOptions ++= Seq(
 
 ThisBuild / testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
 
-val zioVersion        = "2.1.13"
+val zioVersion        = "2.1.22"
 val tapirVersion      = "1.11.10"
-val zioLoggingVersion = "2.4.0"
-val zioConfigVersion  = "4.0.2"
-val sttpVersion       = "3.10.1"
+val zioLoggingVersion = "2.5.1"
+val zioConfigVersion  = "4.0.5"
+val sttpVersion       = "3.11.0"
 val javaMailVersion   = "1.6.2"
-val stripeVersion     = "28.1.0"
+val stripeVersion     = "30.0.0"
 
 val dependencies = Seq(
   "com.softwaremill.sttp.tapir"   %% "tapir-sttp-client"                 % tapirVersion,
@@ -27,7 +27,7 @@ val dependencies = Seq(
   "com.softwaremill.sttp.tapir"   %% "tapir-sttp-stub-server"            % tapirVersion % "test",
   "dev.zio"                       %% "zio-logging"                       % zioLoggingVersion,
   "dev.zio"                       %% "zio-logging-slf4j"                 % zioLoggingVersion,
-  "ch.qos.logback"                 % "logback-classic"                   % "1.5.12",
+  "ch.qos.logback"                 % "logback-classic"                   % "1.5.20",
   "dev.zio"                       %% "zio-test"                          % zioVersion,
   "dev.zio"                       %% "zio-test-junit"                    % zioVersion   % "test",
   "dev.zio"                       %% "zio-test-sbt"                      % zioVersion   % "test",
@@ -37,11 +37,11 @@ val dependencies = Seq(
   "dev.zio"                       %% "zio-config-magnolia"               % zioConfigVersion,
   "dev.zio"                       %% "zio-config-typesafe"               % zioConfigVersion,
   "io.getquill"                   %% "quill-jdbc-zio"                    % "4.8.6",
-  "org.postgresql"                 % "postgresql"                        % "42.7.4",
-  "org.flywaydb"                   % "flyway-core"                       % "11.0.1",
+  "org.postgresql"                 % "postgresql"                        % "42.7.8",
+  "org.flywaydb"                   % "flyway-core"                       % "11.14.1",
   "io.github.scottweaver"         %% "zio-2-0-testcontainers-postgresql" % "0.10.0",
-  "dev.zio"                       %% "zio-prelude"                       % "1.0.0-RC35",
-  "com.auth0"                      % "java-jwt"                          % "4.4.0",
+  "dev.zio"                       %% "zio-prelude"                       % "1.0.0-RC42",
+  "com.auth0"                      % "java-jwt"                          % "4.5.0",
   "com.sun.mail"                   % "javax.mail"                        % javaMailVersion,
   "com.stripe"                     % "stripe-java"                       % stripeVersion
 )

@@ -1,9 +1,8 @@
 package com.rockthejvm.reviewboard.domain.data
 
-import zio.json.JsonCodec
-import zio.json.DeriveJsonCodec
+import zio.json.{DeriveJsonCodec, JsonCodec}
 
-final case class Review (
+final case class Review(
     id: Long, // Primary Key
     companyId: Long,
     userId: Long, // Foreign Key
@@ -14,7 +13,7 @@ final case class Review (
     wouldRecommend: Int,
     review: String,
     created: java.time.Instant,
-    updated: java.time.Instant,
+    updated: java.time.Instant
 )
 
 object Review:
