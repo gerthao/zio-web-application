@@ -10,9 +10,8 @@ class HealthController private extends BaseController with HealthEndpoints:
     val health: ServerEndpoint[Any, Task] = healthEndpoint.serverLogicSuccess[Task]: _ =>
         ZIO.succeed("All good!")
 
-    val errorRoute: ServerEndpoint[Any, Task] = errorEndpoint
-        .serverLogic[Task]:
-            _ => ZIO.fail(new RuntimeException("Something went wrong!")).either
+    val errorRoute: ServerEndpoint[Any, Task] = errorEndpoint.serverLogic[Task]:
+        _ => ZIO.fail(new RuntimeException("Something went wrong!")).either
 
     override val routes: List[ServerEndpoint[Any, Task]] = List(
         health,
