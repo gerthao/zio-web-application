@@ -20,9 +20,8 @@ class CompanyRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends CompanyRep
 
     override def update(id: Long, op: Company => Company): Task[Company] =
         for
-            current <- getById(id).someOrFail(
-                new RuntimeException(s"Could not update: missing id $id")
-            )
+            current <- getById(id).someOrFail:
+                new RuntimeException(s"Cannot update company: id $id not found")
             updated <- run:
                 query[Company]
                     .filter(_.id == lift(id))
