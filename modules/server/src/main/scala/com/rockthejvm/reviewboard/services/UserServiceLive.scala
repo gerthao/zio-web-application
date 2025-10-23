@@ -52,13 +52,13 @@ object UserServiceLive:
 
         // string + salt + nIterations PBKDF2
         def generateHash(string: String): String =
-            val rng = new SecureRandom()
+            val rng  = new SecureRandom()
             val salt = Array.ofDim[Byte](SALT_BYTE_SIZE)
 
             rng.nextBytes(salt)
 
-            val hexSalt = toHex(salt)
-            val byteArray = pdkdf2(string.toCharArray, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE)
+            val hexSalt      = toHex(salt)
+            val byteArray    = pdkdf2(string.toCharArray, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE)
             val hexByteArray = toHex(byteArray)
 
             s"$PBKDF2_ITERATIONS:$hexSalt:$hexByteArray"
@@ -79,21 +79,10 @@ object UserServiceLive:
 
         def validateHash(string: String, hash: String): Boolean = hash.split(":") match
             case Array(first, second, third) =>
-                val iterations = first.toInt
-                val salt = fromHex(second)
+                val iterations   = first.toInt
+                val salt         = fromHex(second)
                 val expectedHash = fromHex(third)
-                val actualHash = pdkdf2(string.toCharArray, salt, iterations, HASH_BYTE_SIZE)
+                val actualHash   = pdkdf2(string.toCharArray, salt, iterations, HASH_BYTE_SIZE)
 
                 compareBytes(expectedHash, actualHash)
             case _ => false
-
-object UserServiceDemo:
-    @main def runPasswordHash(): Unit =
-        val password = "password"
-        // "1000:ACF03745C6107D9087D8F58BA4D0F7BED5845931DBFA9F2A:07365D7C2A3FEE2A3A725D72A2EDAFD5E5F92686BEB07E5B"
-        val hashedPassword = UserServiceLive.Hasher.generateHash(password)
-        val isValid = UserServiceLive.Hasher.validateHash(password, hashedPassword)
-
-        println(s"Password: $password")
-        println(s"Generated Hash: $hashedPassword")
-        println(s"Validate Hash: $isValid")

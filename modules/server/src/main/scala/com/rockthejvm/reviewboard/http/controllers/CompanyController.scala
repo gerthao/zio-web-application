@@ -22,8 +22,7 @@ class CompanyController private (service: CompanyService)
         ZIO.attempt(id.toLong)
             .flatMap(service.getById)
             .catchSome:
-                case _: NumberFormatException =>
-                    service.getBySlug(id)
+                case _: NumberFormatException => service.getBySlug(id)
             .either
 
     override val routes: List[ServerEndpoint[Any, Task]] = List(

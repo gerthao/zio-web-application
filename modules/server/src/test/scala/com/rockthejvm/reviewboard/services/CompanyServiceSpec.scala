@@ -5,7 +5,7 @@ import com.rockthejvm.reviewboard.http.requests.CreateCompanyRequest
 import com.rockthejvm.reviewboard.repositories.CompanyRepository
 import zio.*
 import zio.test.*
-import com.rockthejvm.reviewboard.syntax.*;
+import com.rockthejvm.reviewboard.syntax.*
 
 object CompanyServiceSpec extends ZIOSpecDefault:
     val service: ZIO.ServiceWithZIOPartiallyApplied[CompanyService] =
@@ -65,7 +65,8 @@ object CompanyServiceSpec extends ZIOSpecDefault:
                 false
 
     override def spec: Spec[TestEnvironment & Scope, Any] = suite("CompanyServiceTest")(
-        testCreate, testGetById
+        testCreate,
+        testGetById
     ).provide(
         CompanyServiceLive.layer,
         stubRepositoryLayer

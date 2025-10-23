@@ -28,7 +28,7 @@ object ReviewControllerSpec extends ZIOSpecDefault:
         wouldRecommend = 10,
         review = "all good",
         created = java.time.Instant.now(),
-        updated = java.time.Instant.now(),
+        updated = java.time.Instant.now()
     )
 
     private val serviceStub = new ReviewService:
@@ -100,14 +100,17 @@ object ReviewControllerSpec extends ZIOSpecDefault:
                 .get(uri"/reviews/company/999")
                 .send(backendStub)
         yield assertTrue(
-            response.body.toOption.flatMap(_.fromJson[List[Review]].toOption).contains(List(goodReview)),
-            responseNotFound.body.toOption.flatMap(_.fromJson[List[Review]].toOption).contains(List.empty)
+            response.body.toOption
+                .flatMap(_.fromJson[List[Review]].toOption)
+                .contains(List(goodReview)),
+            responseNotFound.body.toOption
+                .flatMap(_.fromJson[List[Review]].toOption)
+                .contains(List.empty)
         )
 
     override def spec: Spec[TestEnvironment & Scope, Any] =
         suite("ReviewControllerSpec")(
             testPostReview,
             testGetById,
-            testGetByCompanyId,
+            testGetByCompanyId
         ).provide(ZLayer.succeed(serviceStub))
-

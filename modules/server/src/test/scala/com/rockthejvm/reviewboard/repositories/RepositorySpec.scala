@@ -29,6 +29,8 @@ trait RepositorySpec(initScript: String):
     // use the DataSource (as a ZLayer) to build the Quill instance (as a ZLayer)
     val dataSourceLayer = ZLayer:
         for
-            container <- ZIO.acquireRelease(ZIO.attempt(createContainer()))(container => ZIO.attempt(container.stop()).ignoreLogged)
+            container <- ZIO.acquireRelease(ZIO.attempt(createContainer()))(container =>
+                ZIO.attempt(container.stop()).ignoreLogged
+            )
             dataSource <- ZIO.attempt(createDataSource(container))
         yield dataSource

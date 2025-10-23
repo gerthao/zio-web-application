@@ -10,13 +10,13 @@ class ReviewController private (reviewService: ReviewService)
     extends BaseController
     with ReviewEndpoints:
 
-    val create: ServerEndpoint[Any, Task] = createEndpoint.serverLogic: (r: CreateReviewRequest) =>
-        reviewService.create(r, -1 /* TODO add user id */).either
+    val create: ServerEndpoint[Any, Task] = createEndpoint.serverLogic: req =>
+        reviewService.create(req, -1 /* TODO add user id */ ).either
 
-    val getById: ServerEndpoint[Any, Task] = getByIdEndpoint.serverLogic: (id: Long) =>
+    val getById: ServerEndpoint[Any, Task] = getByIdEndpoint.serverLogic: id =>
         reviewService.getById(id).either
 
-    val getByCompanyId: ServerEndpoint[Any, Task] = getByCompanyIdEndpoint.serverLogic: (id: Long) =>
+    val getByCompanyId: ServerEndpoint[Any, Task] = getByCompanyIdEndpoint.serverLogic: id =>
         reviewService.getByCompanyId(id).either
 
     override val routes: List[ServerEndpoint[Any, Task]] = List(

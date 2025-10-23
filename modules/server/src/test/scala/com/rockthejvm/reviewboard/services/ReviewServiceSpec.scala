@@ -18,7 +18,7 @@ object ReviewServiceSpec extends ZIOSpecDefault:
         wouldRecommend = 10,
         review = "all good",
         created = java.time.Instant.now(),
-        updated = java.time.Instant.now(),
+        updated = java.time.Instant.now()
     )
 
     val badReview = Review(
@@ -32,7 +32,7 @@ object ReviewServiceSpec extends ZIOSpecDefault:
         wouldRecommend = 1,
         review = "not good",
         created = java.time.Instant.now(),
-        updated = java.time.Instant.now(),
+        updated = java.time.Instant.now()
     )
 
     val stubRepoLayer: ULayer[ReviewRepository] = ZLayer.succeed:
@@ -87,8 +87,8 @@ object ReviewServiceSpec extends ZIOSpecDefault:
 
     private val testGetById: Spec[ReviewService, Throwable] = test("getById"):
         for
-            service <- ZIO.service[ReviewService]
-            review <- service.getById(1L)
+            service        <- ZIO.service[ReviewService]
+            review         <- service.getById(1L)
             reviewNotFound <- service.getById(999L)
         yield assertTrue(
             review.contains(goodReview),
@@ -97,8 +97,8 @@ object ReviewServiceSpec extends ZIOSpecDefault:
 
     private val testGetByCompanyId: Spec[ReviewService, Throwable] = test("getByCompanyId"):
         for
-            service <- ZIO.service[ReviewService]
-            reviews <- service.getByCompanyId(1L)
+            service         <- ZIO.service[ReviewService]
+            reviews         <- service.getByCompanyId(1L)
             reviewsNotFound <- service.getByCompanyId(999L)
         yield assertTrue(
             reviews.toSet == Set(goodReview, badReview),
@@ -107,8 +107,8 @@ object ReviewServiceSpec extends ZIOSpecDefault:
 
     private val testGetByUserId: Spec[ReviewService, Throwable] = test("getByUserId"):
         for
-            service <- ZIO.service[ReviewService]
-            reviews <- service.getByUserId(1L)
+            service         <- ZIO.service[ReviewService]
+            reviews         <- service.getByUserId(1L)
             reviewsNotFound <- service.getByUserId(999L)
         yield assertTrue(
             reviews.toSet == Set(goodReview, badReview),
@@ -120,9 +120,8 @@ object ReviewServiceSpec extends ZIOSpecDefault:
             testCreate,
             testGetById,
             testGetByCompanyId,
-            testGetByUserId,
+            testGetByUserId
         ).provide(
             ReviewServiceLive.layer,
             stubRepoLayer
         )
-    

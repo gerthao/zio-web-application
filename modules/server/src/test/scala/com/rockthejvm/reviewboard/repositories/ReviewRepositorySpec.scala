@@ -18,7 +18,7 @@ object ReviewRepositorySpec extends ZIOSpecDefault with RepositorySpec("sql/revi
         wouldRecommend = 10,
         review = "all good",
         created = java.time.Instant.now(),
-        updated = java.time.Instant.now(),
+        updated = java.time.Instant.now()
     )
 
     val badReview = Review(
@@ -32,12 +32,12 @@ object ReviewRepositorySpec extends ZIOSpecDefault with RepositorySpec("sql/revi
         wouldRecommend = 1,
         review = "not good",
         created = java.time.Instant.now(),
-        updated = java.time.Instant.now(),
+        updated = java.time.Instant.now()
     )
 
     val testCreate: Spec[ReviewRepository, Throwable] = test("create review"):
         for
-            repo <- ZIO.service[ReviewRepository]
+            repo   <- ZIO.service[ReviewRepository]
             review <- repo.create(goodReview)
         yield assertTrue(
             review.management == goodReview.management,
@@ -47,32 +47,33 @@ object ReviewRepositorySpec extends ZIOSpecDefault with RepositorySpec("sql/revi
             review.wouldRecommend == goodReview.wouldRecommend
         )
 
-    val testGetByIds: Spec[ReviewRepository, Throwable] = test("get review by ids(id, companyId, userId"):
-        for
-            repo <- ZIO.service[ReviewRepository]
-            review <- repo.create(goodReview)
-            fetchedReviewById <- repo.getById(review.id)
-            fetchedReviewByCompanyId <- repo.getById(review.companyId)
-            fetchedReviewByUserId <- repo.getById(review.userId)
-        yield assertTrue(
-            fetchedReviewById.contains(review)
-                && fetchedReviewByCompanyId.contains(review)
-                && fetchedReviewByUserId.contains(review)
-        )
+    val testGetByIds: Spec[ReviewRepository, Throwable] =
+        test("get review by ids(id, companyId, userId"):
+            for
+                repo                     <- ZIO.service[ReviewRepository]
+                review                   <- repo.create(goodReview)
+                fetchedReviewById        <- repo.getById(review.id)
+                fetchedReviewByCompanyId <- repo.getById(review.companyId)
+                fetchedReviewByUserId    <- repo.getById(review.userId)
+            yield assertTrue(
+                fetchedReviewById.contains(review)
+                    && fetchedReviewByCompanyId.contains(review)
+                    && fetchedReviewByUserId.contains(review)
+            )
 
-    val testGetAll: Spec[ReviewRepository, Throwable]  = test("get all reviews"):
+    val testGetAll: Spec[ReviewRepository, Throwable] = test("get all reviews"):
         val program = for
-            repo <- ZIO.service[ReviewRepository]
-            review1 <- repo.create(goodReview)
-            review2 <- repo.create(badReview)
+            repo           <- ZIO.service[ReviewRepository]
+            review1        <- repo.create(goodReview)
+            review2        <- repo.create(badReview)
             companyReviews <- repo.getByCompanyId(1L)
-            userReviews <- repo.getByUserId(1L)
+            userReviews    <- repo.getByUserId(1L)
         yield (review1, review2, companyReviews, userReviews)
 
         program.assert:
             case (review1, review2, companyReviews, userReviews) =>
                 companyReviews.toSet == Set(review1, review2)
-                    && userReviews.toSet == Set(review1, review2)
+                && userReviews.toSet == Set(review1, review2)
 
     val testEdit: Spec[ReviewRepository, Throwable] = test("edit review"):
         for
@@ -95,9 +96,9 @@ object ReviewRepositorySpec extends ZIOSpecDefault with RepositorySpec("sql/revi
 
     val testDelete: Spec[ReviewRepository, Throwable] = test("delete review"):
         for
-            repo <- ZIO.service[ReviewRepository]
-            review <- repo.create(goodReview)
-            _ <- repo.delete(review.id)
+            repo        <- ZIO.service[ReviewRepository]
+            review      <- repo.create(goodReview)
+            _           <- repo.delete(review.id)
             maybeReview <- repo.getById(review.id)
         yield assertTrue(
             maybeReview.isEmpty
