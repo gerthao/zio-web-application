@@ -8,10 +8,11 @@ import zio.*
 class ReviewRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends ReviewRepository:
     import quill.*
 
-    inline given reviewSchema: SchemaMeta[Review] = schemaMeta[Review]("reviews")
+    inline given reviewSchema: SchemaMeta[Review] =schemaMeta[Review]("reviews")
 
     inline given reviewInsertMeta: InsertMeta[Review] =
         insertMeta[Review](_.id, _.created, _.updated)
+
     inline given reviewUpdateMeta: UpdateMeta[Review] =
         updateMeta[Review](_.id, _.companyId, _.userId, _.created)
 
