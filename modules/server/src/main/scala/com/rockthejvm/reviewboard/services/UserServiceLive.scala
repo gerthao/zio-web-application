@@ -1,6 +1,6 @@
 package com.rockthejvm.reviewboard.services
 
-import com.rockthejvm.reviewboard.domain.data.User
+import com.rockthejvm.reviewboard.domain.data.{User, UserToken}
 import com.rockthejvm.reviewboard.repositories.UserRepository
 import zio.{Task, ZIO, ZLayer}
 
@@ -8,7 +8,8 @@ import java.security.SecureRandom
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
-class UserServiceLive private (userRepository: UserRepository) extends UserService:
+class UserServiceLive private (userRepository: UserRepository, jwtService: JwtService)
+    extends UserService:
     override def registerUser(email: String, password: String): Task[User] =
         userRepository.create(
             User(
@@ -20,17 +21,31 @@ class UserServiceLive private (userRepository: UserRepository) extends UserServi
 
     override def verifyEmail(email: String, password: String): Task[Boolean] =
         for
-            existingUser <- userRepository
+            user <- userRepository
                 .getByEmail(email)
                 .someOrFail:
                     new RuntimeException("Cannot verify user email: $email")
             result <- ZIO.attempt:
-                UserServiceLive.Hasher.validateHash(password, existingUser.hashedPassword)
+                UserServiceLive.Hasher.validateHash(password, user.hashedPassword)
         yield result
 
+    override def generateToken(email: String, password: String): Task[Option[UserToken]] =
+        for
+            user <- userRepository
+                .getByEmail(email)
+                .someOrFail:
+                    new RuntimeException("Cannot verify user email: $email")
+            isVerified <- ZIO.attempt:
+                UserServiceLive.Hasher.validateHash(password, user.hashedPassword)
+            maybeToken <- jwtService.createToken(user).when(isVerified)
+        yield maybeToken
+
 object UserServiceLive:
-    val layer: ZLayer[UserRepository, Nothing, UserServiceLive] = ZLayer:
-        ZIO.service[UserRepository].map(UserServiceLive(_))
+    val layer: ZLayer[UserRepository & JwtService, Nothing, UserServiceLive] = ZLayer:
+        for
+            jwtService     <- ZIO.service[JwtService]
+            userRepository <- ZIO.service[UserRepository]
+        yield UserServiceLive(userRepository, jwtService)
 
     object Hasher:
         private val PBKDF2_ALGORITHM: String = "PBKDF2WithHmacSHA512"

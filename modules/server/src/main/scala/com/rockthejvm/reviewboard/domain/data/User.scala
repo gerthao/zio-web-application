@@ -5,3 +5,5 @@ final case class User(
     email: String,
     hashedPassword: String
 )
+
+final case class UserId(id: Long, email: String)
