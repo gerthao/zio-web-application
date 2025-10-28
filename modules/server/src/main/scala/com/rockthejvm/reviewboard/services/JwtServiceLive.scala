@@ -3,18 +3,17 @@ package com.rockthejvm.reviewboard.services
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier.BaseVerification
 import com.auth0.jwt.algorithms.Algorithm
+import com.rockthejvm.reviewboard.config.{Configs, JwtConfig}
 import com.rockthejvm.reviewboard.domain.data.{User, UserId, UserToken}
 import zio.{Clock, Task, ZIO, ZLayer}
 
 import java.time.Instant
 
-class JwtServiceLive(clock: java.time.Clock) extends JwtService:
+class JwtServiceLive(jwtConfig: JwtConfig, clock: java.time.Clock) extends JwtService:
     private val CLAIM_USERNAME = "username"
     private val ISSUER         = "rockthejvm.com"
-    private val SECRET         = "secret"
-    private val TTL            = 30 * 24 * 3600
 
-    private val algorithm = Algorithm.HMAC512(SECRET)
+    private val algorithm = Algorithm.HMAC512(jwtConfig.secret)
     private val verifier = JWT
         .require(algorithm)
         .withIssuer(ISSUER)
@@ -26,7 +25,7 @@ class JwtServiceLive(clock: java.time.Clock) extends JwtService:
             now <- ZIO.attempt:
                 clock.instant()
             expiration <- ZIO.succeed:
-                now.plusSeconds(TTL)
+                now.plusSeconds(jwtConfig.ttl)
             token <- ZIO.attempt:
                 JWT.create()
                     .withIssuer(ISSUER)
@@ -49,6 +48,14 @@ class JwtServiceLive(clock: java.time.Clock) extends JwtService:
         yield userId
 
 object JwtServiceLive:
-    val layer: ZLayer[Any, Nothing, JwtServiceLive] = ZLayer:
-        Clock.javaClock.map: clock =>
-            new JwtServiceLive(clock)
+    val layer: ZLayer[JwtConfig, Nothing, JwtServiceLive] = ZLayer:
+        for
+            jwtConfig <- ZIO.service[JwtConfig]
+            clock     <- Clock.javaClock
+        yield new JwtServiceLive(
+            jwtConfig = jwtConfig,
+            clock = clock
+        )
+
+    val configuredLayer: ZLayer[Any, Throwable, JwtServiceLive] =
+        Configs.makeConfigLayer[JwtConfig]("application.jwt") >>> layer

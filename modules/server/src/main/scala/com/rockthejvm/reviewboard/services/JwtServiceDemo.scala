@@ -1,7 +1,10 @@
 package com.rockthejvm.reviewboard.services
 
+import com.rockthejvm.reviewboard.config.{Configs, JwtConfig}
 import com.rockthejvm.reviewboard.domain.data.User
-import zio.{Scope, ZIO, ZIOAppArgs, ZIOAppDefault, Console}
+import zio.config.*
+import zio.config.magnolia.*
+import zio.{Console, Scope, ZIO, ZIOAppArgs, ZIOAppDefault, *}
 
 object JwtServiceDemo extends ZIOAppDefault:
     val program: ZIO[JwtService, Throwable, Unit] =
@@ -12,7 +15,8 @@ object JwtServiceDemo extends ZIOAppDefault:
             userId <- service.verifyToken(userToken.token)
             _ <- Console.printLine(userId.toString)
         yield ()
-            
+
     override def run: ZIO[ZIOAppArgs & Scope, Any, Any] = program.provide(
-        JwtServiceLive.layer
+        JwtServiceLive.layer,
+        Configs.makeConfigLayer[JwtConfig]("application.jwt")
     )
