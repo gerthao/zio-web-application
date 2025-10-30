@@ -8,15 +8,31 @@ import zio.*
 class CompanyRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends CompanyRepository:
     import quill.*
 
-    inline given schema: SchemaMeta[Company]  = schemaMeta[Company]("companies")
-    inline given insMeta: InsertMeta[Company] = insertMeta[Company](_.id)
-    inline given upMeta: UpdateMeta[Company]  = updateMeta[Company](_.id)
-
     override def create(company: Company): Task[Company] =
         run:
             query[Company]
                 .insertValue(lift(company))
                 .returning(r => r)
+
+    override def delete(id: Long): Task[Company] =
+        run:
+            query[Company]
+                .filter(_.id == lift(id))
+                .delete
+                .returning(r => r)
+
+    override def getAll: Task[List[Company]] = run(query[Company])
+
+    override def getBySlug(slug: String): Task[Option[Company]] =
+        run:
+            query[Company].filter(_.slug == lift(slug))
+        .map(_.headOption)
+
+    inline given insMeta: InsertMeta[Company] = insertMeta[Company](_.id)
+
+    inline given schema: SchemaMeta[Company] = schemaMeta[Company]("companies")
+
+    inline given upMeta: UpdateMeta[Company] = updateMeta[Company](_.id)
 
     override def update(id: Long, op: Company => Company): Task[Company] =
         for
@@ -33,20 +49,6 @@ class CompanyRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends CompanyRep
         run:
             query[Company].filter(_.id == lift(id))
         .map(_.headOption)
-
-    override def delete(id: Long): Task[Company] =
-        run:
-            query[Company]
-                .filter(_.id == lift(id))
-                .delete
-                .returning(r => r)
-
-    override def getBySlug(slug: String): Task[Option[Company]] =
-        run:
-            query[Company].filter(_.slug == lift(slug))
-        .map(_.headOption)
-
-    override def getAll: Task[List[Company]] = run(query[Company])
 
 object CompanyRepositoryLive:
     val layer: ZLayer[Quill.Postgres[SnakeCase], Nothing, CompanyRepositoryLive] = ZLayer:

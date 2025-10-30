@@ -10,6 +10,29 @@ import javax.crypto.spec.PBEKeySpec
 
 class UserServiceLive private (userRepository: UserRepository, jwtService: JwtService)
     extends UserService:
+    override def deleteUser(email: String, password: String): Task[User] =
+        for
+            user <- userRepository
+                .getByEmail(email)
+                .someOrFail(new RuntimeException(s"Cannot delete nonexistent user $email"))
+            isVerified <- ZIO.attempt:
+                UserServiceLive.Hasher.validateHash(password, user.hashedPassword)
+            deletedUser <- userRepository
+                .delete(user.id)
+                .when(isVerified)
+                .someOrFail(new RuntimeException(s"Cannot delete user $email"))
+        yield user
+
+    override def generateToken(email: String, password: String): Task[Option[UserToken]] =
+        for
+            user <- userRepository
+                .getByEmail(email)
+                .someOrFail(new RuntimeException("Cannot verify user email: $email"))
+            isVerified <- ZIO.attempt:
+                UserServiceLive.Hasher.validateHash(password, user.hashedPassword)
+            maybeToken <- jwtService.createToken(user).when(isVerified)
+        yield maybeToken
+
     override def registerUser(email: String, password: String): Task[User] =
         userRepository.create(
             User(
@@ -19,26 +42,39 @@ class UserServiceLive private (userRepository: UserRepository, jwtService: JwtSe
             )
         )
 
+    override def updatePassword(
+        email: String,
+        oldPassword: String,
+        newPassword: String
+    ): Task[User] =
+        for
+            user <- userRepository
+                .getByEmail(email)
+                .someOrFail:
+                    new RuntimeException(s"Cannot verify nonexistent user $email")
+            isVerified <- ZIO.attempt:
+                UserServiceLive.Hasher.validateHash(oldPassword, user.hashedPassword)
+            updatedUser <- userRepository
+                .update(
+                    user.id,
+                    _.copy(hashedPassword = UserServiceLive.Hasher.generateHash(newPassword))
+                )
+                .when(isVerified)
+                .someOrFail(new RuntimeException(s"Cannot update user password for $email"))
+        yield updatedUser
+
     override def verifyEmail(email: String, password: String): Task[Boolean] =
         for
-            user <- userRepository
+            maybeUser <- userRepository
                 .getByEmail(email)
-                .someOrFail:
-                    new RuntimeException("Cannot verify user email: $email")
-            result <- ZIO.attempt:
-                UserServiceLive.Hasher.validateHash(password, user.hashedPassword)
+            result <- maybeUser match
+                case Some(user) =>
+                    ZIO.attempt:
+                        UserServiceLive.Hasher.validateHash(password, user.hashedPassword)
+                    .orElseSucceed(false)
+                case None =>
+                    ZIO.succeed(false)
         yield result
-
-    override def generateToken(email: String, password: String): Task[Option[UserToken]] =
-        for
-            user <- userRepository
-                .getByEmail(email)
-                .someOrFail:
-                    new RuntimeException("Cannot verify user email: $email")
-            isVerified <- ZIO.attempt:
-                UserServiceLive.Hasher.validateHash(password, user.hashedPassword)
-            maybeToken <- jwtService.createToken(user).when(isVerified)
-        yield maybeToken
 
 object UserServiceLive:
     val layer: ZLayer[UserRepository & JwtService, Nothing, UserServiceLive] = ZLayer:
@@ -48,22 +84,12 @@ object UserServiceLive:
         yield UserServiceLive(userRepository, jwtService)
 
     object Hasher:
+        private lazy val secretKeyFactory: SecretKeyFactory =
+            SecretKeyFactory.getInstance(PBKDF2_ALGORITHM)
         private val PBKDF2_ALGORITHM: String = "PBKDF2WithHmacSHA512"
         private val PBKDF2_ITERATIONS: Int   = 1000
         private val SALT_BYTE_SIZE: Int      = 24
         private val HASH_BYTE_SIZE: Int      = 24
-        private lazy val secretKeyFactory: SecretKeyFactory =
-            SecretKeyFactory.getInstance(PBKDF2_ALGORITHM)
-
-        private def compareBytes(a: Array[Byte], b: Array[Byte]): Boolean =
-            val range = 0 until math.min(a.length, b.length)
-            val difference = range.foldLeft(a.length ^ b.length):
-                case (acc, i) => acc | (a(i) ^ b(i))
-
-            difference == 0
-
-        private def fromHex(hexString: String): Array[Byte] =
-            hexString.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte)
 
         // string + salt + nIterations PBKDF2
         def generateHash(string: String): String =
@@ -73,12 +99,14 @@ object UserServiceLive:
             rng.nextBytes(salt)
 
             val hexSalt      = toHex(salt)
-            val byteArray    = pdkdf2(string.toCharArray, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE)
+            val byteArray    = pbkdf2(string.toCharArray, salt, PBKDF2_ITERATIONS, HASH_BYTE_SIZE)
             val hexByteArray = toHex(byteArray)
 
             s"$PBKDF2_ITERATIONS:$hexSalt:$hexByteArray"
 
-        private def pdkdf2(
+        private def toHex(array: Array[Byte]): String = array.map(b => f"$b%02X").mkString
+
+        private def pbkdf2(
             message: Array[Char],
             salt: Array[Byte],
             iterations: Int,
@@ -90,14 +118,22 @@ object UserServiceLive:
                 .generateSecret(keySpec)
                 .getEncoded
 
-        private def toHex(array: Array[Byte]): String = array.map(b => f"$b%02X").mkString
-
         def validateHash(string: String, hash: String): Boolean = hash.split(":") match
             case Array(first, second, third) =>
                 val iterations   = first.toInt
                 val salt         = fromHex(second)
                 val expectedHash = fromHex(third)
-                val actualHash   = pdkdf2(string.toCharArray, salt, iterations, HASH_BYTE_SIZE)
+                val actualHash   = pbkdf2(string.toCharArray, salt, iterations, HASH_BYTE_SIZE)
 
                 compareBytes(expectedHash, actualHash)
             case _ => false
+
+        private def compareBytes(a: Array[Byte], b: Array[Byte]): Boolean =
+            val range = 0 until math.min(a.length, b.length)
+            val difference = range.foldLeft(a.length ^ b.length):
+                case (acc, i) => acc | (a(i) ^ b(i))
+
+            difference == 0
+
+        private def fromHex(hexString: String): Array[Byte] =
+            hexString.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte)

@@ -1,9 +1,9 @@
 package com.rockthejvm.reviewboard.config
 
 import com.typesafe.config.ConfigFactory
-import zio.{Tag, ZIO, ZLayer}
 import zio.config.magnolia
 import zio.config.typesafe.TypesafeConfig
+import zio.{Tag, ZIO, ZLayer}
 
 object Configs:
     def makeConfigLayer[C](

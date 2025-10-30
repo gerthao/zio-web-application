@@ -12,8 +12,7 @@ import java.time.Instant
 class JwtServiceLive(jwtConfig: JwtConfig, clock: java.time.Clock) extends JwtService:
     private val CLAIM_USERNAME = "username"
     private val ISSUER         = "rockthejvm.com"
-
-    private val algorithm = Algorithm.HMAC512(jwtConfig.secret)
+    private val algorithm      = Algorithm.HMAC512(jwtConfig.secret)
     private val verifier = JWT
         .require(algorithm)
         .withIssuer(ISSUER)

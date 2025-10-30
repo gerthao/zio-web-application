@@ -25,11 +25,11 @@ class ReviewServiceLive private (repo: ReviewRepository) extends ReviewService:
             )
         )
 
-    override def getById(id: Long): Task[Option[Review]] =
-        repo.getById(id)
-
     override def getByCompanyId(companyId: Long): Task[List[Review]] =
         repo.getByCompanyId(companyId)
+
+    override def getById(id: Long): Task[Option[Review]] =
+        repo.getById(id)
 
     override def getByUserId(userId: Long): Task[List[Review]] =
         repo.getByUserId(userId)

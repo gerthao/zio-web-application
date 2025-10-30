@@ -9,11 +9,11 @@ import zio.{Console, Scope, ZIO, ZIOAppArgs, ZIOAppDefault, *}
 object JwtServiceDemo extends ZIOAppDefault:
     val program: ZIO[JwtService, Throwable, Unit] =
         for
-            service <- ZIO.service[JwtService]
+            service   <- ZIO.service[JwtService]
             userToken <- service.createToken(User(1L, "hello@world.goodbye", "something"))
-            _ <- Console.printLine(userToken)
-            userId <- service.verifyToken(userToken.token)
-            _ <- Console.printLine(userId.toString)
+            _         <- Console.printLine(userToken)
+            userId    <- service.verifyToken(userToken.token)
+            _         <- Console.printLine(userId.toString)
         yield ()
 
     override def run: ZIO[ZIOAppArgs & Scope, Any, Any] = program.provide(
